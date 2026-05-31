@@ -1,0 +1,124 @@
+# ============================================================
+# ChinaVista Gitleaks Configuration
+# Tailored for Chinese tourism platform secrets detection
+# Run: gitleaks detect --config=.gitleaks.toml
+# ============================================================
+
+title = "ChinaVista Gitleaks Config"
+
+[extend]
+useDefault = true
+
+# ------------------------ Custom Rules ------------------------
+
+# Alibaba Cloud AccessKey (格式: LTAI + 16-20位字母数字)
+[[rules]]
+id = "alibaba-access-key"
+description = "Aliyun/ Alibaba Cloud AccessKey ID"
+regex = '''\b(LTAI[a-zA-Z0-9]{16,24})\b'''
+keywords = ["LTAI", "accessKey", "access_key", "aliyun"]
+
+# Alibaba Cloud AccessKey Secret (常见变量赋值模式)
+[[rules]]
+id = "alibaba-access-secret"
+description = "Aliyun AccessKey Secret in variable assignment"
+regex = '''(?i)(access_?key_?secret|aliyun_?secret)\s*[:=]\s*['\"][a-zA-Z0-9/+]{30,}['\"]'''
+keywords = ["access_key_secret", "accessKeySecret", "aliyun_secret"]
+
+# 阿里云 OSS 配置
+[[rules]]
+id = "alibaba-oss-config"
+description = "Alibaba Cloud OSS configuration with credentials"
+regex = '''(?i)(oss\.|aliyun\.oss\.).*(endpoint|bucket|accessKey|secret)'''
+keywords = ["oss.", "aliyun.oss"]
+
+# 微信支付配置
+[[rules]]
+id = "wechat-pay-config"
+description = "WeChat Pay API keys and merchant config"
+regex = '''(?i)(wechat.*(key|secret|mchid|mch_id|appid|appsecret|serial_no|private_key))\s*[:=]\s*['\"][^'"]+['\"]'''
+keywords = ["wechat", "mchid", "mch_id", "appsecret", "wx"]
+
+# 支付宝配置
+[[rules]]
+id = "alipay-config"
+description = "Alipay app keys and private keys"
+regex = '''(?i)(alipay.*(key|secret|appid|app_private_key|alipay_public_key))\s*[:=]\s*['\"][^'"]+['\"]'''
+keywords = ["alipay", "app_private_key", "alipay_public_key"]
+
+# 高德地图 API Key
+[[rules]]
+id = "amap-api-key"
+description = "AMap (高德) API key"
+regex = '''(?i)(amap|gaode).*(key|apikey|api_key|jscode)\s*[:=]\s*['\"][a-f0-9]{32,}['\"]'''
+keywords = ["amap", "gaode", "高德"]
+
+# 百度地图 API Key
+[[rules]]
+id = "baidu-map-ak"
+description = "Baidu Map AK"
+regex = '''(?i)(baidu).*(ak|access_?key|map.*key)\s*[:=]\s*['\"][a-zA-Z0-9]{20,}['\"]'''
+keywords = ["baidu", "百度"]
+
+# 12306 接口凭证
+[[rules]]
+id = "12306-credentials"
+description = "12306 API credentials"
+regex = '''(?i)(12306|railway).*(key|secret|token|password)\s*[:=]\s*['\"][^'"]+['\"]'''
+keywords = ["12306", "railway"]
+
+# 短信服务 (阿里云短信/腾讯云短信)
+[[rules]]
+id = "sms-service-credentials"
+description = "SMS service API keys"
+regex = '''(?i)(sms|dysms|message).*(key|secret|sign|template)\s*[:=]\s*['\"][^'"]{10,}['\"]'''
+keywords = ["sms", "dysms", "sign_name"]
+
+# JWT Secrets (弱密钥检测)
+[[rules]]
+id = "jwt-secret-weak"
+description = "JWT secret that looks weak or is a placeholder"
+regex = '''(?i)(jwt.*secret|jwt.*key|token.*secret)\s*[:=]\s*['\"](secret|changeme|test|dev|your-?.*key|123456|password)['\"]'''
+keywords = ["jwt_secret", "JWT_SECRET", "token_secret"]
+
+# 数据库连接字符串（含密码）
+[[rules]]
+id = "db-connection-string"
+description = "Database connection string with password"
+regex = '''(?i)(mysql|postgres|redis|mongodb|elasticsearch)://[^:]+:[^@]+@'''
+keywords = ["mysql://", "postgres://", "redis://", "mongodb://"]
+
+# 通用 API Key 变量赋值（兜底规则）
+[[rules]]
+id = "generic-api-key-assignment"
+description = "Generic API key or secret assignment"
+regex = '''(?i)(api_?key|api_?secret|app_?secret|client_?secret|private_?key)\s*[:=]\s*['\"][A-Za-z0-9+/=_\-]{20,}['\"]'''
+keywords = ["api_key", "api_secret", "app_secret", "client_secret", "private_key"]
+
+# DeepSeek / OpenAI / Qwen API Keys
+[[rules]]
+id = "llm-api-keys"
+description = "LLM provider API keys (OpenAI / DeepSeek / Qwen / Claude)"
+regex = '''(?i)((sk|ds|qwen|dashscope)-[a-zA-Z0-9]{20,}|(openai|deepseek|qwen|anthropic|claude).*(key|secret)\s*[:=]\s*['\"][^'"]{20,}['\"])'''
+keywords = ["sk-", "openai", "deepseek", "qwen", "anthropic", "dashscope"]
+
+# ------------------------ Allowlist ------------------------
+[allowlist]
+description = "Global allowlist — placeholder values and non-scanned paths"
+regexes = [
+    '''(?i)(example|placeholder|your-|xxx|xxxx|changeme|replace|todo|假的|示例|占位)''',
+    '''(?i)(<your.*>|your_.*_here|\[.*\])''',
+]
+paths = [
+    '''node_modules/''',
+    '''\.next/''',
+    '''dist/''',
+    '''build/''',
+    '''coverage/''',
+    '''\.git/''',
+    '''pnpm-lock\.yaml''',
+    '''package-lock\.json''',
+    '''yarn\.lock''',
+    '''\.log$''',
+    '''vendor/''',
+]

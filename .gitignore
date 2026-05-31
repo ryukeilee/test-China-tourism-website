@@ -1,0 +1,129 @@
+# ============================================================
+# ChinaVista .gitignore
+# 最后更新: 2026-05-31
+# ============================================================
+
+# ------------------------ Secrets / Credentials ------------------------
+# NEVER commit these files — they contain real keys, tokens, passwords
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+secrets/
+credentials/
+*secret*
+*credential*
+service-account*.json
+*.service-account.json
+
+# ------------------------ Node.js / Next.js ------------------------
+node_modules/
+.next/
+out/
+dist/
+build/
+.swc/
+*.tsbuildinfo
+next-env.d.ts
+
+# ------------------------ Package Manager ------------------------
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+.pnpm-store/
+
+# ------------------------ Environment & Config ------------------------
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ------------------------ IDE / Editor ------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+.cursor/
+
+# ------------------------ OS Files ------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ------------------------ Debug / Dump ------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# ------------------------ Testing ------------------------
+coverage/
+.nyc_output/
+cypress/videos/
+cypress/screenshots/
+playwright-report/
+test-results/
+
+# ------------------------ Docker ------------------------
+docker-compose.override.yml
+.docker/
+
+# ------------------------ Database ------------------------
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+dump/
+backups/
+migrations/backup/
+
+# ------------------------ Uploads / User Content ------------------------
+uploads/
+public/uploads/
+storage/
+
+# ------------------------ AI / ML ------------------------
+*.pth
+*.pt
+*.onnx
+*.h5
+model-weights/
+checkpoints/
+
+# ------------------------ Terraform / IaC ------------------------
+terraform.tfvars
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+
+# ------------------------ Misc ------------------------
+*.tgz
+*.tar.gz
+*.zip
+tmp/
+temp/
+.tmp/
+.cache/
+parcel-cache/
+.turbo/
