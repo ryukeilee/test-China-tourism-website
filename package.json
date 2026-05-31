@@ -1,0 +1,35 @@
+{
+  "name": "chinavista",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ChinaVista（华景中国）— 中国一站式 AI 智慧旅游平台",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@chinavista/web",
+    "dev:api": "turbo dev --filter=@chinavista/api",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@chinavista/web",
+    "build:api": "turbo build --filter=@chinavista/api",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "clean": "turbo clean && rm -rf node_modules .turbo",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "db:migrate": "turbo db:migrate --filter=@chinavista/api",
+    "db:seed": "turbo db:seed --filter=@chinavista/api"
+  },
+  "devDependencies": {
+    "@chinavista/eslint-config": "workspace:*",
+    "@chinavista/tsconfig": "workspace:*",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  }
+}

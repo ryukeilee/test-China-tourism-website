@@ -1,0 +1,134 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # MySQL 8 — Primary database
+  # ============================================================
+  mysql:
+    image: mysql:8.4
+    container_name: chinavista-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-chinavista}
+      MYSQL_USER: ${DB_USER:-chinavista}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-chinavista}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init/mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chinavista-net
+
+  # ============================================================
+  # Redis 7 — Cache & sessions
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: chinavista-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - chinavista-net
+
+  # ============================================================
+  # Elasticsearch 8 — Full-text search
+  # ============================================================
+  elasticsearch:
+    image: elasticsearch:8.15.5
+    container_name: chinavista-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "${ES_PORT:-9200}:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+    networks:
+      - chinavista-net
+
+  # ============================================================
+  # API — NestJS backend (development only)
+  # ============================================================
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile.dev
+    container_name: chinavista-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-4000}:4000"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+      - ES_HOST=http://elasticsearch:9200
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ../apps/api/src:/app/apps/api/src:delegated
+      - ../packages:/app/packages:delegated
+    networks:
+      - chinavista-net
+
+  # ============================================================
+  # Web — Next.js frontend (development only)
+  # ============================================================
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile.dev
+    container_name: chinavista-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/api
+    depends_on:
+      - api
+    volumes:
+      - ../apps/web/src:/app/apps/web/src:delegated
+      - ../packages:/app/packages:delegated
+    networks:
+      - chinavista-net
+
+volumes:
+  mysql_data:
+  redis_data:
+  es_data:
+
+networks:
+  chinavista-net:
+    driver: bridge

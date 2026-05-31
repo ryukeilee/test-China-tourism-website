@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChinaVista 华景中国 — AI 智慧旅游平台</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: oklch(98% 0 0);
+    --surface-elevated: #fff;
+    --surface-muted: oklch(95% 0.005 260);
+    --ink: oklch(18% 0 0);
+    --ink-muted: oklch(45% 0.01 260);
+    --ink-subtle: oklch(65% 0.01 260);
+    --accent: oklch(62% 0.19 25);
+    --accent-warm: oklch(68% 0.17 50);
+    --jade: oklch(52% 0.08 165);
+    --radius: 1.5rem;
+    --radius-sm: 0.75rem;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;font-family:'Noto Sans SC','Source Han Sans SC',system-ui,sans-serif;color:var(--ink);background:var(--surface);-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;overflow-x:hidden}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+
+  /* Header */
+  .header{position:fixed;inset:0 0 auto;z-index:50;padding:1.25rem 0;transition:all .3s}
+  .header.scrolled{background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,.08);padding:.75rem 0}
+  .header-inner{max-width:1280px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .header-logo{font-family:'Noto Serif SC',serif;font-size:1.25rem;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .3s}
+  .header.scrolled .header-logo{color:var(--ink)}
+  .header-logo .logo-accent{color:var(--accent)}
+  .header-nav{display:none;gap:.25rem}
+  @media(min-width:1024px){.header-nav{display:flex}}
+  .header-nav a{padding:.5rem .75rem;font-size:.875rem;font-weight:500;color:rgba(255,255,255,.8);text-decoration:none;border-radius:.5rem;transition:all .2s}
+  .header.scrolled .header-nav a{color:var(--ink-muted)}
+  .header-nav a:hover{color:#fff;background:rgba(255,255,255,.1)}
+  .header.scrolled .header-nav a:hover{color:var(--ink);background:var(--surface-muted)}
+  .header-cta{display:none;align-items:center;gap:.375rem;padding:.5rem 1rem;font-size:.875rem;font-weight:500;color:#fff;background:var(--accent);border-radius:9999px;text-decoration:none;transition:all .2s}
+  @media(min-width:1024px){.header-cta{display:flex}}
+  .header-cta:hover{background:oklch(58% 0.19 25);transform:scale(1.03)}
+  .mobile-btn{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:.5rem;border:none;background:none;color:#fff;cursor:pointer}
+  .header.scrolled .mobile-btn{color:var(--ink)}
+  .mobile-btn svg{width:1.375rem;height:1.375rem}
+  @media(min-width:1024px){.mobile-btn{display:none}}
+
+  /* Mobile menu */
+  .mobile-menu{position:fixed;inset:0;z-index:40;background:var(--surface);display:flex;flex-direction:column;padding-top:5rem;transform:translateX(100%);transition:transform .3s var(--ease-out)}
+  .mobile-menu.open{transform:translateX(0)}
+  .mobile-menu a{display:block;padding:1rem 1.5rem;font-size:1.125rem;font-weight:500;color:var(--ink);text-decoration:none;transition:background .2s}
+  .mobile-menu a:hover{background:var(--surface-muted)}
+
+  /* Hero */
+  .hero{position:relative;height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+  .hero-bg{position:absolute;inset:0}
+  .hero-slide{position:absolute;inset:0;transition:opacity 1s ease-out;opacity:0}
+  .hero-slide.active{opacity:1}
+  .hero-slide .slide-gradient{position:absolute;inset:0}
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.45),rgba(0,0,0,.2),rgba(0,0,0,.65));z-index:1}
+  .hero-content{position:relative;z-index:10;text-align:center;padding:0 1rem;display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+  @media(min-width:640px){.hero-content{gap:2rem}}
+  .hero-title{font-family:'Noto Serif SC',serif;font-size:clamp(3rem, 1rem + 7vw, 8rem);font-weight:900;line-height:1.05;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.3);animation:slideUp .6s var(--ease-out) both}
+  .hero-subtitle{max-width:40rem;font-size:clamp(1.125rem, .92rem + .8vw, 1.75rem);font-weight:300;line-height:1.4;color:rgba(255,255,255,.9);text-shadow:0 1px 10px rgba(0,0,0,.3);animation:slideUp .6s var(--ease-out) .1s both}
+  @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  /* Search box */
+  .search-wrapper{width:100%;max-width:42rem;animation:slideUp .6s var(--ease-out) .2s both}
+  .search-group{display:flex;align-items:center;gap:.5rem;padding:.875rem 1rem;background:rgba(255,255,255,.15);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.25);border-radius:1rem;box-shadow:0 25px 50px rgba(0,0,0,.25);transition:all .3s}
+  @media(min-width:640px){.search-group{padding:1rem 1.25rem;gap:.75rem}}
+  .search-group:focus-within{box-shadow:0 0 0 2px rgba(255,255,255,.5),0 25px 50px rgba(0,0,0,.3);transform:scale(1.02)}
+  .mode-btn{display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;font-size:.75rem;font-weight:500;color:rgba(255,255,255,.8);background:rgba(255,255,255,.2);border:none;border-radius:.75rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+  @media(min-width:640px){.mode-btn{padding:.375rem .875rem;font-size:.875rem;gap:.5rem}}
+  .mode-btn.ai{background:var(--accent);color:#fff}
+  .mode-btn:hover{background:rgba(255,255,255,.3)}
+  .mode-btn.ai:hover{background:oklch(58% 0.19 25)}
+  .search-input{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font-size:.875rem}
+  @media(min-width:640px){.search-input{font-size:1.0625rem}}
+  .search-input::placeholder{color:rgba(255,255,255,.55)}
+  .search-submit{display:flex;align-items:center;justify-content:center;width:2.25rem;height:2.25rem;background:rgba(255,255,255,.2);border:none;border-radius:.75rem;color:#fff;cursor:pointer;transition:all .2s;flex-shrink:0}
+  @media(min-width:640px){.search-submit{width:2.5rem;height:2.5rem}}
+  .search-submit:hover{background:rgba(255,255,255,.3)}
+  .search-submit svg{width:1.25rem;height:1.25rem}
+  .example-chips{margin-top:1rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem}
+  .example-chip{padding:.375rem 1rem;font-size:.75rem;color:rgba(255,255,255,.9);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:9999px;cursor:pointer;transition:all .2s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  @media(min-width:640px){.example-chip{padding:.5rem 1.25rem;font-size:.875rem}}
+  .example-chip:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)}
+  .kbd-hint{margin-top:.75rem;text-align:center;font-size:.75rem;color:rgba(255,255,255,.4)}
+
+  /* Scroll indicator */
+  .scroll-indicator{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:10;animation:float 6s ease-in-out infinite}
+  .scroll-indicator svg{width:1.5rem;height:1.5rem;stroke:#fff;stroke-width:2;fill:none}
+
+  /* Section shared */
+  .section{padding:clamp(4rem, 3rem + 5vw, 10rem) clamp(1rem, .5rem + 3vw, 2rem)}
+  .section-muted{background:var(--surface-muted)}
+  .container{max-width:1280px;margin:0 auto}
+  .section-header{text-align:center;margin-bottom:3rem}
+  .section-header-left{text-align:left;display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem}
+  .section-title{font-family:'Noto Serif SC',serif;font-size:clamp(2rem, 1.5rem + 3vw, 4rem);font-weight:600;line-height:1.1}
+  .section-desc{margin-top:1rem;font-size:clamp(1rem, .92rem + .4vw, 1.125rem);color:var(--ink-muted)}
+  .section-link{font-size:.875rem;font-weight:500;color:var(--accent);text-decoration:none;white-space:nowrap}
+
+  /* Cards */
+  .card{background:var(--surface-elevated);border:1px solid oklch(90% 0.005 260);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.04);transition:box-shadow .3s var(--ease-out),transform .3s var(--ease-out)}
+  .card:hover{box-shadow:0 8px 30px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);transform:translateY(-2px)}
+
+  /* Destination grid */
+  .dest-grid{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .dest-card{overflow:hidden;text-decoration:none;color:inherit;display:block}
+  .dest-card-img{height:12rem;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:5rem;font-weight:900;color:rgba(0,0,0,.08);user-select:none}
+  .dest-card-body{padding:1.5rem}
+  .dest-card-province{font-size:.8125rem;font-weight:500;color:var(--accent)}
+  .dest-card-name{font-family:'Noto Serif SC',serif;font-size:clamp(1.25rem, 1rem + 1.5vw, 2rem);font-weight:600;margin-top:.25rem;transition:color .2s}
+  .dest-card:hover .dest-card-name{color:var(--accent)}
+  .dest-card-tagline{margin-top:.5rem;font-size:.875rem;color:var(--ink-muted)}
+  .dest-card-stat{margin-top:1rem;display:inline-flex;padding:.25rem .75rem;font-size:.75rem;color:var(--ink-muted);background:var(--surface-muted);border-radius:9999px}
+  .dest-card-arrow{margin-left:auto;font-size:.875rem;font-weight:500;color:var(--accent)}
+
+  /* Weather grid */
+  .weather-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .weather-card{display:flex;flex-direction:column;align-items:center;padding:1.25rem;text-align:center;text-decoration:none;color:inherit}
+  .weather-icon{font-size:2rem;margin-bottom:.5rem}
+  .weather-city{font-weight:600;font-size:.9375rem}
+  .weather-temp{font-family:'Noto Serif SC',serif;font-size:1.75rem;font-weight:700;margin-top:.25rem}
+  .weather-cond{font-size:.8125rem;color:var(--ink-muted);margin-top:.125rem}
+  .weather-meta{display:flex;gap:.75rem;margin-top:.75rem;font-size:.75rem;color:var(--ink-muted)}
+
+  /* Guide grid */
+  .guide-grid{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .guide-card{padding:1.5rem;text-decoration:none;color:inherit}
+  .guide-card-cat{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+  .guide-card-icon{display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;background:rgba(220,60,40,.1);border-radius:.75rem;font-size:1.25rem}
+  .guide-card-label{font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+  .guide-card-title{font-weight:600;line-height:1.4;transition:color .2s}
+  .guide-card:hover .guide-card-title{color:var(--accent)}
+  .guide-card-desc{margin-top:.5rem;font-size:.875rem;color:var(--ink-muted)}
+
+  /* AI teaser */
+  .ai-tag{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem 1rem;font-size:.875rem;font-weight:500;color:var(--accent);background:rgba(220,60,40,.1);border-radius:9999px;margin-bottom:1.5rem}
+  .ai-grid{display:grid;gap:2rem;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .ai-card{display:flex;flex-direction:column;align-items:center;padding:2rem;text-align:center}
+  .ai-card-icon{display:flex;align-items:center;justify-content:center;width:3.5rem;height:3.5rem;background:rgba(220,60,40,.1);color:var(--accent);border-radius:1rem;font-size:1.5rem;transition:transform .3s}
+  .ai-card:hover .ai-card-icon{transform:scale(1.1)}
+  .ai-card-title{margin-top:1.25rem;font-weight:600;font-size:1.125rem}
+  .ai-card-desc{margin-top:.5rem;font-size:.875rem;color:var(--ink-muted)}
+  .ai-cta{display:inline-flex;align-items:center;gap:.5rem;padding:.875rem 2rem;background:var(--accent);color:#fff;font-weight:500;border-radius:9999px;text-decoration:none;transition:all .2s;font-size:1rem}
+  .ai-cta:hover{transform:scale(1.05);background:oklch(58% 0.19 25)}
+
+  /* Footer */
+  .footer{background:var(--surface-elevated);border-top:1px solid var(--surface-muted);padding:clamp(2rem, 1.5rem + 2vw, 4rem) clamp(1rem, .5rem + 3vw, 2rem)}
+  .footer-grid{display:grid;gap:2.5rem;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .footer-col h4{font-weight:600;margin-bottom:1rem;font-size:.9375rem}
+  .footer-col a{display:block;padding:.375rem 0;font-size:.875rem;color:var(--ink-muted);text-decoration:none;transition:color .2s}
+  .footer-col a:hover{color:var(--accent)}
+  .footer-bottom{padding-top:2rem;margin-top:3rem;border-top:1px solid var(--surface-muted);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;font-size:.8125rem;color:var(--ink-muted)}
+  .footer-brand{font-family:'Noto Serif SC',serif;font-weight:600;color:var(--ink)}
+  .footer-locales{display:flex;gap:1rem}
+
+  /* Dot nav */
+  .dot-nav{position:absolute;bottom:6rem;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:.5rem}
+  .dot-nav button{height:.375rem;border-radius:9999px;border:none;cursor:pointer;transition:all .3s;background:rgba(255,255,255,.5)}
+  .dot-nav button.active{width:2rem;background:#fff}
+  .dot-nav button:not(.active){width:.375rem}
+  .dot-nav button:hover:not(.active){background:rgba(255,255,255,.8)}
+
+  /* Nav buttons on hero */
+  .hero-nav-btn{position:absolute;bottom:6rem;z-index:10;width:2rem;height:2rem;border-radius:9999px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  .hero-nav-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .hero-nav-prev{right:5rem}@media(min-width:640px){.hero-nav-prev{right:6rem}}
+  .hero-nav-next{right:1.5rem}@media(min-width:640px){.hero-nav-next{right:2rem}}
+
+  /* Toast / notification bar */
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:60;background:var(--ink);color:#fff;padding:.75rem 1.5rem;border-radius:9999px;font-size:.875rem;box-shadow:0 10px 40px rgba(0,0,0,.2);animation:slideUp .4s var(--ease-out);display:none}
+  .toast.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Header -->
+<header class="header" id="header">
+  <div class="header-inner">
+    <a href="#" class="header-logo"><span class="logo-accent">华</span><span style="display:none" class="sm-inline">ChinaVista</span></a>
+    <nav class="header-nav">
+      <a href="#destinations">景点</a><a href="#hotels">酒店</a><a href="#flights">机票</a><a href="#trains">火车票</a><a href="#cars">租车</a><a href="#guides">攻略</a><a href="#food">美食</a><a href="#weather">天气</a>
+    </nav>
+    <a href="#" class="header-cta" onclick="toastMsg('AI 规划页面')">✨ AI 规划</a>
+    <button class="mobile-btn" id="mobileBtn" aria-label="菜单" onclick="toggleMenu()">
+      <svg id="menuIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#destinations" onclick="toggleMenu()">🏔️ 景点</a><a href="#hotels" onclick="toggleMenu()">🏨 酒店</a><a href="#flights" onclick="toggleMenu()">✈️ 机票</a><a href="#trains" onclick="toggleMenu()">🚄 火车票</a><a href="#cars" onclick="toggleMenu()">🚗 租车</a><a href="#guides" onclick="toggleMenu()">📖 攻略</a><a href="#food" onclick="toggleMenu()">🍜 美食</a><a href="#weather" onclick="toggleMenu()">🌤️ 天气</a>
+</div>
+
+<!-- Hero -->
+<section class="hero" aria-label="首页横幅">
+  <div class="hero-bg" id="heroBg">
+    <div class="hero-slide active"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(38% .06 160/.6),oklch(42% .08 165/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(35% .03 100/.6),oklch(32% .04 120/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(38% .04 190/.6),oklch(40% .06 210/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(32% .02 70/.6),oklch(35% .04 50/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(40% .04 230/.6),oklch(38% .06 250/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(35% .03 250/.6),oklch(38% .05 220/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(32% .04 50/.6),oklch(36% .06 30/.4))"></div></div>
+    <div class="hero-slide"><div class="slide-gradient" style="position:absolute;inset:0;background:linear-gradient(135deg,oklch(38% .04 230/.6),oklch(35% .03 260/.4))"></div></div>
+  </div>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="hero-title">发现中国之美</h1>
+    <p class="hero-subtitle">AI 旅行管家全程陪伴，从灵感到预订一步到位</p>
+
+    <div class="search-wrapper">
+      <div class="search-group" id="searchGroup">
+        <button class="mode-btn" id="modeBtn" onclick="toggleMode()">📍 <span class="mode-label">搜索</span></button>
+        <input class="search-input" id="searchInput" type="text" placeholder="你想去哪里？" aria-label="搜索目的地">
+        <button class="search-submit" onclick="handleSearch()" aria-label="搜索">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </button>
+      </div>
+      <div class="example-chips">
+        <button class="example-chip" onclick="setSearch('五一上海三日游')">🏙️ 五一上海三日游</button>
+        <button class="example-chip" onclick="setSearch('成都亲子游')">🐼 成都亲子游</button>
+        <button class="example-chip" onclick="setSearch('新疆自驾15天')">🏔️ 新疆自驾15天</button>
+        <button class="example-chip" onclick="setSearch('北京故宫一日游')">🏯 北京故宫一日游</button>
+      </div>
+      <p class="kbd-hint">按 <kbd style="background:rgba(255,255,255,.1);padding:.125rem .375rem;border-radius:.25rem">⌘K</kbd> 快速搜索</p>
+    </div>
+  </div>
+
+  <div class="scroll-indicator" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+
+  <button class="hero-nav-btn hero-nav-prev" onclick="prevSlide()" aria-label="上一张">◀</button>
+  <button class="hero-nav-btn hero-nav-next" onclick="nextSlide()" aria-label="下一张">▶</button>
+  <div class="dot-nav" id="dotNav" role="tablist" aria-label="目的地轮播"></div>
+</section>
+
+<!-- Destinations -->
+<section id="destinations" class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">探索热门目的地</h2>
+      <p class="section-desc">从雪山到海滩，从古城到现代都市 — 中国有无限可能</p>
+    </div>
+    <div class="dest-grid">
+      <a href="#" class="card dest-card" onclick="return toastMsg('九寨沟详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(78% .06 160/.3),oklch(82% .04 165/.15))">九</div>
+        <div class="dest-card-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between"><div><span class="dest-card-province">四川·阿坝</span><h3 class="dest-card-name">九寨沟</h3></div></div>
+          <p class="dest-card-tagline">人间仙境，童话世界</p>
+          <span class="dest-card-stat">年均游客 500万+</span>
+        </div>
+      </a>
+      <a href="#" class="card dest-card" onclick="return toastMsg('张家界详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(65% .02 100/.3),oklch(70% .03 120/.15))">张</div>
+        <div class="dest-card-body">
+          <span class="dest-card-province">湖南·张家界</span><h3 class="dest-card-name">张家界</h3>
+          <p class="dest-card-tagline">阿凡达悬浮山取景地</p><span class="dest-card-stat">世界自然遗产</span>
+        </div>
+      </a>
+      <a href="#" class="card dest-card" onclick="return toastMsg('桂林详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(75% .04 190/.3),oklch(80% .05 200/.15))">桂</div>
+        <div class="dest-card-body">
+          <span class="dest-card-province">广西·桂林</span><h3 class="dest-card-name">桂林</h3>
+          <p class="dest-card-tagline">桂林山水甲天下</p><span class="dest-card-stat">最佳 4-10月</span>
+        </div>
+      </a>
+      <a href="#" class="card dest-card" onclick="return toastMsg('黄山详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(60% .02 70/.3),oklch(65% .03 60/.15))">黄</div>
+        <div class="dest-card-body">
+          <span class="dest-card-province">安徽·黄山</span><h3 class="dest-card-name">黄山</h3>
+          <p class="dest-card-tagline">五岳归来不看山</p><span class="dest-card-stat">云海日出绝美</span>
+        </div>
+      </a>
+      <a href="#" class="card dest-card" onclick="return toastMsg('西湖详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(78% .03 230/.3),oklch(82% .04 240/.15))">西</div>
+        <div class="dest-card-body">
+          <span class="dest-card-province">浙江·杭州</span><h3 class="dest-card-name">西湖</h3>
+          <p class="dest-card-tagline">淡妆浓抹总相宜</p><span class="dest-card-stat">免费 5A 景区</span>
+        </div>
+      </a>
+      <a href="#" class="card dest-card" onclick="return toastMsg('敦煌详情页')">
+        <div class="dest-card-img" style="background:linear-gradient(135deg,oklch(68% .04 50/.3),oklch(72% .06 40/.15))">敦</div>
+        <div class="dest-card-body">
+          <span class="dest-card-province">甘肃·酒泉</span><h3 class="dest-card-name">敦煌</h3>
+          <p class="dest-card-tagline">丝绸之路上的明珠</p><span class="dest-card-stat">莫高窟世界遗产</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Weather preview -->
+<section id="weather" class="section section-muted">
+  <div class="container">
+    <div class="section-header-left">
+      <div><h2 class="section-title">热门城市天气</h2><p class="section-desc">出行前查看目的地天气，选择最佳旅行时间</p></div>
+      <a href="#" class="section-link" onclick="return toastMsg('天气详情页')">15天预报 →</a>
+    </div>
+    <div class="weather-grid">
+      <a href="#" class="card weather-card" onclick="return toastMsg('北京天气')"><span class="weather-icon">☀️</span><span class="weather-city">北京</span><span class="weather-temp">28°</span><span class="weather-cond">晴</span><div class="weather-meta"><span>💨 3级</span><span>💧 45%</span></div></a>
+      <a href="#" class="card weather-card" onclick="return toastMsg('上海天气')"><span class="weather-icon">⛅</span><span class="weather-city">上海</span><span class="weather-temp">25°</span><span class="weather-cond">多云</span><div class="weather-meta"><span>💨 4级</span><span>💧 65%</span></div></a>
+      <a href="#" class="card weather-card" onclick="return toastMsg('成都天气')"><span class="weather-icon">🌧️</span><span class="weather-city">成都</span><span class="weather-temp">22°</span><span class="weather-cond">小雨</span><div class="weather-meta"><span>💨 2级</span><span>💧 80%</span></div></a>
+      <a href="#" class="card weather-card" onclick="return toastMsg('三亚天气')"><span class="weather-icon">☀️</span><span class="weather-city">三亚</span><span class="weather-temp">32°</span><span class="weather-cond">晴</span><div class="weather-meta"><span>💨 3级</span><span>💧 70%</span></div></a>
+      <a href="#" class="card weather-card" onclick="return toastMsg('拉萨天气')"><span class="weather-icon">☀️</span><span class="weather-city">拉萨</span><span class="weather-temp">16°</span><span class="weather-cond">晴</span><div class="weather-meta"><span>💨 5级</span><span>💧 30%</span></div></a>
+      <a href="#" class="card weather-card" onclick="return toastMsg('哈尔滨天气')"><span class="weather-icon">⛅</span><span class="weather-city">哈尔滨</span><span class="weather-temp">18°</span><span class="weather-cond">多云</span><div class="weather-meta"><span>💨 3级</span><span>💧 55%</span></div></a>
+    </div>
+  </div>
+</section>
+
+<!-- Guides -->
+<section id="guides" class="section">
+  <div class="container">
+    <div class="section-header-left">
+      <div><h2 class="section-title">精选旅游攻略</h2><p class="section-desc">AI 精选 + 真实玩家分享，让你的旅行更精彩</p></div>
+      <a href="#" class="section-link" onclick="return toastMsg('攻略频道')">查看全部攻略 →</a>
+    </div>
+    <div class="guide-grid">
+      <a href="#" class="card guide-card" onclick="return toastMsg('云南攻略')">
+        <div class="guide-card-cat"><span class="guide-card-icon">🧭</span><span class="guide-card-label">自由行</span></div>
+        <h3 class="guide-card-title">云南大理丽江7日自由行攻略</h3>
+        <p class="guide-card-desc">苍山洱海，古城漫步，体验最地道的云南慢生活</p>
+      </a>
+      <a href="#" class="card guide-card" onclick="return toastMsg('广东亲子攻略')">
+        <div class="guide-card-cat"><span class="guide-card-icon">👨‍👩‍👧</span><span class="guide-card-label">亲子</span></div>
+        <h3 class="guide-card-title">广州长隆+珠海海洋王国亲子攻略</h3>
+        <p class="guide-card-desc">最适合带娃的广东双城游，孩子玩到不想走</p>
+      </a>
+      <a href="#" class="card guide-card" onclick="return toastMsg('霞浦攻略')">
+        <div class="guide-card-cat"><span class="guide-card-icon">📸</span><span class="guide-card-label">摄影</span></div>
+        <h3 class="guide-card-title">霞浦滩涂摄影全攻略</h3>
+        <p class="guide-card-desc">中国最美滩涂，日出日落最佳拍摄点一网打尽</p>
+      </a>
+      <a href="#" class="card guide-card" onclick="return toastMsg('虎跳峡攻略')">
+        <div class="guide-card-cat"><span class="guide-card-icon">🥾</span><span class="guide-card-label">徒步</span></div>
+        <h3 class="guide-card-title">虎跳峡徒步2日经典路线</h3>
+        <p class="guide-card-desc">世界十大经典徒步路线之一，震撼峡谷风光</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- AI Teaser -->
+<section class="section section-muted">
+  <div class="container" style="text-align:center">
+    <span class="ai-tag">✨ AI 旅行管家</span>
+    <h2 class="section-title">让 AI 成为你的私人旅行规划师</h2>
+    <p class="section-desc" style="max-width:36rem;margin:1rem auto 0">只需告诉 AI 你的想法，剩下的交给我们</p>
+    <div class="ai-grid" style="margin-top:3rem">
+      <div class="card ai-card"><div class="ai-card-icon">🗺️</div><h3 class="ai-card-title">智能行程规划</h3><p class="ai-card-desc">输入预算和偏好，AI 自动生成完整旅行计划</p></div>
+      <div class="card ai-card"><div class="ai-card-icon">🏨</div><h3 class="ai-card-title">个性化推荐</h3><p class="ai-card-desc">基于你的喜好推荐酒店、景点和美食</p></div>
+      <div class="card ai-card"><div class="ai-card-icon">✈️</div><h3 class="ai-card-title">一键预订</h3><p class="ai-card-desc">机票、酒店、门票一站式比价和预订</p></div>
+      <div class="card ai-card"><div class="ai-card-icon">🌤️</div><h3 class="ai-card-title">实时天气</h3><p class="ai-card-desc">15天天气预报，助你选择最佳出行时间</p></div>
+    </div>
+    <a href="#" class="ai-cta" style="margin-top:3rem" onclick="return toastMsg('AI 规划页面')">✨ 开始 AI 规划</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col"><h4>探索</h4><a href="#" onclick="return toastMsg('景点')">热门景点</a><a href="#" onclick="return toastMsg('攻略')">旅游攻略</a><a href="#" onclick="return toastMsg('美食')">美食推荐</a><a href="#" onclick="return toastMsg('天气')">天气预报</a><a href="#" onclick="return toastMsg('活动')">特色活动</a></div>
+      <div class="footer-col"><h4>预订</h4><a href="#" onclick="return toastMsg('酒店')">酒店预订</a><a href="#" onclick="return toastMsg('机票')">机票预订</a><a href="#" onclick="return toastMsg('高铁')">高铁票</a><a href="#" onclick="return toastMsg('租车')">租车服务</a><a href="#" onclick="return toastMsg('门票')">景区门票</a></div>
+      <div class="footer-col"><h4>服务</h4><a href="#" onclick="return toastMsg('AI规划')">AI 行程规划</a><a href="#" onclick="return toastMsg('社区')">旅游社区</a><a href="#" onclick="return toastMsg('会员')">会员中心</a><a href="#" onclick="return toastMsg('商家')">商家入驻</a><a href="#" onclick="return toastMsg('帮助')">帮助中心</a></div>
+      <div class="footer-col"><h4>关于</h4><a href="#" onclick="return toastMsg('关于')">关于我们</a><a href="#" onclick="return toastMsg('隐私')">隐私政策</a><a href="#" onclick="return toastMsg('条款')">服务条款</a><a href="#" onclick="return toastMsg('联系')">联系我们</a></div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-brand">华景中国 ChinaVista</span>
+      <span>© 2026 ChinaVista · AI 智慧旅游平台</span>
+      <span class="footer-locales"><span>🇨🇳 中文</span><span>🇺🇸 EN</span><span>🇯🇵 日本語</span><span>🇰🇷 한국어</span><span>🇫🇷 Français</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // --- Hero carousel ---
+  const slides = document.querySelectorAll('#heroBg .hero-slide');
+  const total = slides.length;
+  let current = 0;
+
+  // Build dot nav
+  const dotNav = document.getElementById('dotNav');
+  for (let i = 0; i < total; i++) {
+    const btn = document.createElement('button');
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-label', '切换到第' + (i + 1) + '张');
+    btn.className = i === 0 ? 'active' : '';
+    btn.onclick = () => goTo(i);
+    dotNav.appendChild(btn);
+  }
+  const dots = dotNav.querySelectorAll('button');
+
+  function goTo(i) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+  function nextSlide() { goTo((current + 1) % total); }
+  function prevSlide() { goTo((current - 1 + total) % total); }
+
+  // Auto-advance (respects reduced motion)
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let autoTimer;
+  function startAuto() {
+    if (prefersReduced.matches) return;
+    autoTimer = setInterval(nextSlide, 6000);
+  }
+  function stopAuto() { clearInterval(autoTimer); }
+  prefersReduced.addEventListener('change', (e) => { stopAuto(); if (!e.matches) startAuto(); });
+  document.addEventListener('visibilitychange', () => { stopAuto(); if (!document.hidden) startAuto(); });
+  startAuto();
+
+  // --- Header scroll ---
+  const header = document.getElementById('header');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // --- Mobile menu ---
+  const mobileMenu = document.getElementById('mobileMenu');
+  function toggleMenu() {
+    mobileMenu.classList.toggle('open');
+  }
+
+  // --- Search ---
+  let aiMode = false;
+  function toggleMode() {
+    aiMode = !aiMode;
+    const btn = document.getElementById('modeBtn');
+    const input = document.getElementById('searchInput');
+    const label = btn.querySelector('.mode-label');
+    if (aiMode) {
+      btn.classList.add('ai');
+      btn.innerHTML = '✨ <span class="mode-label">AI 规划</span>';
+      input.placeholder = '描述你的旅行愿望…';
+    } else {
+      btn.classList.remove('ai');
+      btn.innerHTML = '📍 <span class="mode-label">搜索</span>';
+      input.placeholder = '你想去哪里？';
+    }
+  }
+
+  function setSearch(q) {
+    const input = document.getElementById('searchInput');
+    input.value = q;
+    if (!aiMode) toggleMode();
+    input.focus();
+  }
+
+  function handleSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    toastMsg(aiMode ? 'AI 正在规划：' + q : '搜索：' + q);
+  }
+
+  // Ctrl/Cmd+K shortcut
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+  });
+
+  // --- Toast ---
+  function toastMsg(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = '📍 ' + msg + '（启动后端服务后可用）';
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), 2500);
+    return false;
+  }
+
+  // --- Initial slide setup ---
+  goTo(0);
+</script>
+
+</body>
+</html>

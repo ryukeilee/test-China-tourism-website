@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// User & Auth
+// ============================================================
+
+enum MembershipTier {
+  V1
+  V2
+  V3
+  V4
+  V5
+  SVIP
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  name           String
+  avatar         String?
+  locale         String         @default("zh")
+  membershipTier MembershipTier @default(V1)
+  points         Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  posts     TravelPost[]
+  comments  Comment[]
+  orders    Order[]
+  bookmarks Bookmark[]
+  reviews   Review[]
+
+  @@map("users")
+}
+
+// ============================================================
+// Scenic Spots
+// ============================================================
+
+model ScenicSpot {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  nameEn       String?
+  province     String
+  city         String
+  description  String   @db.Text
+  ticketPrice  Int
+  openingHours String
+  bestSeasons  String   // JSON array stored as string
+  tips         String   @db.Text
+  rating       Float    @default(0)
+  reviewCount  Int      @default(0)
+  aiSummary    String?  @db.Text
+  latitude     Float
+  longitude    Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  images     ScenicImage[]
+  facilities ScenicFacility[]
+
+  @@map("scenic_spots")
+}
+
+model ScenicImage {
+  id        String   @id @default(cuid())
+  scenicId  String
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  scenic    ScenicSpot @relation(fields: [scenicId], references: [id], onDelete: Cascade)
+
+  @@map("scenic_images")
+}
+
+model ScenicFacility {
+  id        String   @id @default(cuid())
+  scenicId  String
+  type      String   // entrance, parking, restaurant, restroom, visitor_center
+  name      String
+  latitude  Float
+  longitude Float
+  scenic    ScenicSpot @relation(fields: [scenicId], references: [id], onDelete: Cascade)
+
+  @@map("scenic_facilities")
+}
+
+// ============================================================
+// Hotels
+// ============================================================
+
+enum HotelCategory {
+  FIVE_STAR
+  FOUR_STAR
+  THREE_STAR
+  BOUTIQUE
+  HOSTEL
+}
+
+model Hotel {
+  id         String        @id @default(cuid())
+  slug       String        @unique
+  name       String
+  category   HotelCategory
+  city       String
+  province   String
+  vrTourUrl  String?
+  rating     Float         @default(0)
+  reviewCount Int          @default(0)
+  priceMin   Int
+  priceMax   Int
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  images    HotelImage[]
+  rooms     Room[]
+  amenities HotelAmenity[]
+
+  @@map("hotels")
+}
+
+model HotelImage {
+  id        String @id @default(cuid())
+  hotelId   String
+  url       String
+  alt       String?
+  sortOrder Int    @default(0)
+  hotel     Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_images")
+}
+
+model Room {
+  id        String @id @default(cuid())
+  hotelId   String
+  name      String
+  price     Int
+  bedType   String
+  maxGuests Int
+  available Boolean @default(true)
+  hotel     Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@map("rooms")
+}
+
+model HotelAmenity {
+  id      String @id @default(cuid())
+  hotelId String
+  type    String // wifi, breakfast, parking, pool, gym, spa
+  hotel   Hotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_amenities")
+}
+
+// ============================================================
+// Reviews
+// ============================================================
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  targetType String  // scenic, hotel
+  targetId  String
+  rating    Int
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user   User       @relation(fields: [userId], references: [id])
+  // targetType discriminates the target (scenic/hotel); targetId is a logical FK
+  // Application-level joins are used for the polymorphic relation
+
+  @@map("reviews")
+}
+
+// ============================================================
+// Community
+// ============================================================
+
+model TravelPost {
+  id        String   @id @default(cuid())
+  authorId  String
+  title     String
+  content   String   @db.Text
+  videoUrl  String?
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User      @relation(fields: [authorId], references: [id])
+  images    PostImage[]
+  comments  Comment[]
+  bookmarks Bookmark[]
+
+  @@map("travel_posts")
+}
+
+model PostImage {
+  id        String @id @default(cuid())
+  postId    String
+  url       String
+  alt       String?
+  sortOrder Int    @default(0)
+  post      TravelPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_images")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  post   TravelPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User       @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+}
+
+model Bookmark {
+  id      String   @id @default(cuid())
+  userId  String
+  postId  String
+  createdAt DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id])
+  post TravelPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+// ============================================================
+// Orders & Payment
+// ============================================================
+
+enum OrderStatus {
+  PENDING
+  PAID
+  COMPLETED
+  REFUNDED
+  CANCELLED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  totalAmount     Int
+  status          OrderStatus @default(PENDING)
+  paymentProvider String?     // wechat, alipay, unionpay, applepay
+  paymentId       String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  itemType  String // hotel, flight, train, scenic, car_rental
+  itemId    String
+  name      String
+  quantity  Int
+  unitPrice Int
+  totalPrice Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
